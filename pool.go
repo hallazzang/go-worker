@@ -16,6 +16,9 @@ type Pool struct {
 	wg           sync.WaitGroup
 }
 
+// NewPool creates a new pool of given worker function.
+// Since it starts with zero workers, the pool does not run workers
+// until the first call of Resize.
 func NewPool(f func(context.Context), options ...Option) *Pool {
 	c := Config{
 		ctx:          context.Background(),
@@ -33,6 +36,11 @@ func NewPool(f func(context.Context), options ...Option) *Pool {
 	}
 }
 
+// Resize changes active worker count.
+// If given n is greater than current worker count,
+// it starts new workers. If given n is less than current
+// worker count, it cancels running workers' context.
+// This method is concurrent-safe.
 func (p *Pool) Resize(n int) {
 	p.mux.Lock()
 	defer p.mux.Unlock()
@@ -51,6 +59,8 @@ func (p *Pool) Resize(n int) {
 	}
 }
 
+// Close cancels all running workers' context and wait
+// for all workers to stop.
 func (p *Pool) Close() {
 	p.cancel()
 	p.wg.Wait()
