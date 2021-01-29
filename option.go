@@ -8,6 +8,7 @@ import (
 type Config struct {
 	ctx          context.Context
 	restartDelay time.Duration
+	idFunc       IDFunc
 }
 
 type Option func(*Config)
@@ -23,5 +24,12 @@ func WithContext(ctx context.Context) Option {
 func RestartAfter(d time.Duration) Option {
 	return func(c *Config) {
 		c.restartDelay = d
+	}
+}
+
+// WithIDFunc sets worker id generator function.
+func WithIDFunc(f IDFunc) Option {
+	return func(c *Config) {
+		c.idFunc = f
 	}
 }
